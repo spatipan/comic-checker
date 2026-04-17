@@ -1,8 +1,10 @@
 
 subscription:
-  - name: "Eternally Regressing Knight"
-    type: manhwa
+  - name: Eternally Regressing Knight
     url: https://w8.regressingknight.com/eternally-regressing-knight-chapter-{chapter}/
+    notify: true
+  - name: Pick Me Up Infinite Gacha
+    url: https://w13.pickmeupgacha.com/pick-me-up-infinite-gacha-chapter-{chapter}/
     notify: true
 
 
