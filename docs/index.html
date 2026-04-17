@@ -2,10 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Manga Checker">
 <title>Manga Checker</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <style>
   :root {
     --bg: #0f1115;
@@ -38,58 +44,105 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   a { color: var(--accent); }
-  button { font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); padding: 6px 12px; border-radius: 6px; }
+  button {
+    font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    padding: 8px 14px; border-radius: 8px; min-height: 44px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
   button:hover:not(:disabled) { border-color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
   button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
   button.danger { color: var(--danger); }
+  button.icon { min-width: 44px; padding: 8px; }
   input[type=text], input[type=number], input[type=password], input[type=url] {
     font: inherit; background: var(--surface); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 8px 10px; width: 100%;
+    border-radius: 8px; padding: 10px 12px; min-height: 44px; width: 100%;
   }
-  label { display: block; margin: 10px 0 4px; color: var(--muted); font-size: 13px; }
-  .app { max-width: 720px; margin: 0 auto; padding: 20px 16px 80px; }
+  input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  label { display: block; margin: 12px 0 4px; color: var(--muted); font-size: 13px; }
+  label.inline { display: inline-flex; align-items: center; gap: 8px; margin: 12px 0; }
+  label.inline input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); }
+
+  .app {
+    max-width: 720px; margin: 0 auto;
+    padding: max(16px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+  }
   .header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
   .header h1 { font-size: 18px; margin: 0; }
   .header-actions { display: flex; gap: 8px; align-items: center; }
   .meta { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
   .card h2 { font-size: 16px; margin: 0 0 4px; }
   .card .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .status { font-size: 13px; color: var(--muted); }
-  .status .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); margin-right: 6px; }
-  .bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 16px; display: flex; gap: 8px; justify-content: center; }
-  .error { color: var(--danger); padding: 10px; background: var(--surface); border: 1px solid var(--danger); border-radius: 8px; margin-bottom: 12px; }
+  .status { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .status .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); }
+  .bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    display: flex; gap: 8px; justify-content: center;
+  }
+  .error { color: var(--danger); padding: 10px 12px; background: var(--surface); border: 1px solid var(--danger); border-radius: 8px; margin-bottom: 12px; }
   .muted { color: var(--muted); }
-  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
-  .field-error { color: var(--danger); font-size: 12px; }
-  .hint { font-size: 12px; color: var(--muted); }
-  .hint-footnote { font-size: 12px; color: var(--muted); margin-top: 16px; }
-  .gate-actions { margin-top: 14px; display: flex; justify-content: flex-end; }
+  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .field-error { color: var(--danger); font-size: 13px; margin-top: 4px; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .hint-footnote { font-size: 13px; color: var(--muted); margin-top: 16px; }
+  .gate-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
 
-  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; max-width: 480px; width: 100%; }
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding: 0; z-index: 10;
+  }
+  @media (min-width: 560px) {
+    .modal-bg { align-items: center; padding: 16px; }
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0; padding: 18px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    max-width: 480px; width: 100%;
+    max-height: calc(100dvh - 32px); overflow-y: auto;
+    animation: slideUp 180ms ease-out;
+  }
+  @media (min-width: 560px) { .modal { border-radius: 16px; } }
+  @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
   .modal h2 { margin: 0 0 10px; font-size: 17px; }
-  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
-  .gate { max-width: 440px; margin: 60px auto; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .gate {
+    max-width: 440px; margin: 60px auto; padding: 24px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  }
   .gate h1 { margin-top: 0; font-size: 20px; }
   .gate p { color: var(--muted); font-size: 14px; }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--muted); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px; }
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid currentColor; border-top-color: transparent;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
 </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script type="module">
-import React, { useState, useEffect, useCallback } from 'https://esm.sh/react@18.3.1';
+import React, { useState, useEffect, useCallback, useRef, useId } from 'https://esm.sh/react@18.3.1';
 import { createRoot } from 'https://esm.sh/react-dom@18.3.1/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import yaml from 'https://esm.sh/js-yaml@4.1.0';
 
 const h = htm.bind(React.createElement);
-const e = React.createElement;
 
 // ---------- repo targeting ----------
 function detectRepo() {
@@ -98,7 +151,6 @@ function detectRepo() {
   if (host.endsWith('.github.io') && path.length >= 1) {
     return { owner: host.split('.')[0], repo: path[0] };
   }
-  // local dev fallback — edit this block to match your repo
   return { owner: 'REPLACE_ME', repo: 'comic-checker' };
 }
 const REPO = detectRepo();
@@ -126,12 +178,8 @@ function makeApi(pat) {
     return r.json();
   }
 
-  function b64encode(str) {
-    return btoa(unescape(encodeURIComponent(str)));
-  }
-  function b64decode(str) {
-    return decodeURIComponent(escape(atob(str.replace(/\n/g, ''))));
-  }
+  const b64encode = (str) => btoa(unescape(encodeURIComponent(str)));
+  const b64decode = (str) => decodeURIComponent(escape(atob(str.replace(/\n/g, ''))));
 
   return {
     async getContents(path) {
@@ -167,57 +215,48 @@ function relativeTime(iso) {
   return `${Math.floor(diff / 86400)} d ago`;
 }
 
-function formatUrl(template, chapter) {
-  return template.replace('{chapter}', chapter);
+const formatUrl = (template, chapter) => template.replace('{chapter}', chapter);
+
+// ---------- error boundary ----------
+class ErrorBoundary extends React.Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return h`
+        <div className="gate" role="alert">
+          <h1>⚠️ Something broke</h1>
+          <p>${this.state.error.message}</p>
+          <div className="gate-actions">
+            <button onClick=${() => location.reload()}>Reload</button>
+          </div>
+        </div>
+      `;
+    }
+    return this.props.children;
+  }
 }
 
 // ---------- components ----------
 function TokenGate({ onSave }) {
   const [value, setValue] = useState('');
+  const tokenId = useId();
   const repoSlug = `${REPO.owner}/${REPO.repo}`;
-
-  return e('div', { className: 'gate' }, [
-    e('h1', { key: 'title' }, '📖 Manga Checker'),
-    e('p', { key: 'intro' }, [
-      'Paste a GitHub fine-grained PAT with ',
-      e('strong', { key: 'contents' }, 'Contents: Read & Write'),
-      ' and ',
-      e('strong', { key: 'actions' }, 'Actions: Read & Write'),
-      ' on ',
-      e('code', { key: 'repo' }, repoSlug),
-      '.',
-    ]),
-    e('label', { key: 'label' }, 'Personal Access Token'),
-    e('input', {
-      key: 'input',
-      type: 'password',
-      placeholder: 'github_pat_...',
-      value,
-      onChange: event => setValue(event.target.value),
-      onKeyDown: event => {
-        if (event.key === 'Enter' && value) {
-          onSave(value);
-        }
-      },
-    }),
-    e('div', { key: 'actions', className: 'gate-actions' }, [
-      e(
-        'button',
-        {
-          key: 'save',
-          className: 'primary',
-          onClick: () => value && onSave(value),
-          disabled: !value,
-        },
-        'Save & continue',
-      ),
-    ]),
-    e('p', { key: 'footnote', className: 'hint-footnote' }, [
-      'Stored in ',
-      e('code', { key: 'storage' }, 'localStorage'),
-      '. Sign out by clearing it (button in header).',
-    ]),
-  ]);
+  return h`
+    <div className="gate">
+      <h1>📖 Manga Checker</h1>
+      <p>Paste a GitHub fine-grained PAT with <strong>Contents: Read & Write</strong> and <strong>Actions: Read & Write</strong> on <code>${repoSlug}</code>.</p>
+      <label htmlFor=${tokenId}>Personal Access Token</label>
+      <input id=${tokenId} type="password" placeholder="github_pat_..." autoComplete="off"
+             value=${value}
+             onChange=${ev => setValue(ev.target.value)}
+             onKeyDown=${ev => { if (ev.key === 'Enter' && value) onSave(value); }} />
+      <div className="gate-actions">
+        <button className="primary" onClick=${() => value && onSave(value)} disabled=${!value}>Save & continue</button>
+      </div>
+      <p className="hint-footnote">Stored in <code>localStorage</code>. Sign out to clear it.</p>
+    </div>
+  `;
 }
 
 function MangaCard({ sub, lastChapter, onEdit, onRemove }) {
@@ -245,6 +284,27 @@ function AddEditModal({ initial, isAdd, existingNames, onSave, onCancel }) {
   const [lastChapter, setLastChapter] = useState(initial?.lastChapter ?? 0);
   const [saving, setSaving] = useState(false);
 
+  const nameId = useId();
+  const urlId = useId();
+  const notifyId = useId();
+  const chapterId = useId();
+  const titleId = useId();
+  const firstFieldRef = useRef(null);
+
+  useEffect(() => {
+    const prevFocus = document.activeElement;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    firstFieldRef.current?.focus();
+    const onKey = (ev) => { if (ev.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+      if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
+    };
+  }, [onCancel]);
+
   const nameConflict = isAdd && existingNames.includes(name.trim());
   const urlValid = url.includes('{chapter}');
   const canSave = name.trim() && urlValid && !nameConflict && !saving;
@@ -252,43 +312,44 @@ function AddEditModal({ initial, isAdd, existingNames, onSave, onCancel }) {
   async function handleSave() {
     setSaving(true);
     try {
-      await onSave({
-        name: name.trim(),
-        url: url.trim(),
-        notify,
-        lastChapter: Number(lastChapter) || 0,
-      });
-    } catch (e) {
+      await onSave({ name: name.trim(), url: url.trim(), notify, lastChapter: Number(lastChapter) || 0 });
+    } catch (err) {
       setSaving(false);
-      alert(e.message);
+      alert(err.message);
     }
   }
 
   return h`
-    <div className="modal-bg" onClick=${e => { if (e.target === e.currentTarget) onCancel(); }}>
-      <div className="modal">
-        <h2>${isAdd ? 'Add series' : 'Edit series'}</h2>
+    <div className="modal-bg" onClick=${(ev) => { if (ev.target === ev.currentTarget) onCancel(); }}>
+      <div className="modal" role="dialog" aria-modal="true" aria-labelledby=${titleId}>
+        <h2 id=${titleId}>${isAdd ? 'Add series' : 'Edit series'}</h2>
 
-        <label>Name</label>
-        <input type="text" value=${name} onChange=${e => setName(e.target.value)} disabled=${!isAdd} />
-        ${nameConflict ? h`<div className="field-error">Name already exists.</div>` : null}
+        <label htmlFor=${nameId}>Name</label>
+        <input id=${nameId} ref=${firstFieldRef} type="text" value=${name}
+               onChange=${ev => setName(ev.target.value)} disabled=${!isAdd} />
+        ${nameConflict ? h`<div className="field-error" role="alert">Name already exists.</div>` : null}
 
-        <label>URL template (must contain <code>{chapter}</code>)</label>
-        <input type="url" value=${url} onChange=${e => setUrl(e.target.value)}
+        <label htmlFor=${urlId}>URL template (must contain <code>{chapter}</code>)</label>
+        <input id=${urlId} type="url" value=${url}
+               onChange=${ev => setUrl(ev.target.value)}
                placeholder="https://example.com/series-chapter-{chapter}/" />
-        ${url && !urlValid ? h`<div className="field-error">Missing {chapter} placeholder.</div>` : null}
+        ${url && !urlValid ? h`<div className="field-error" role="alert">Missing {chapter} placeholder.</div>` : null}
 
-        <label>
-          <input type="checkbox" checked=${notify} onChange=${e => setNotify(e.target.checked)} /> Notify on new chapter
+        <label className="inline" htmlFor=${notifyId}>
+          <input id=${notifyId} type="checkbox" checked=${notify} onChange=${ev => setNotify(ev.target.checked)} />
+          <span>Notify on new chapter</span>
         </label>
 
-        <label>Last known chapter</label>
-        <input type="number" min="0" value=${lastChapter} onChange=${e => setLastChapter(e.target.value)} />
+        <label htmlFor=${chapterId}>Last known chapter</label>
+        <input id=${chapterId} type="number" min="0" inputMode="numeric" value=${lastChapter}
+               onChange=${ev => setLastChapter(ev.target.value)} />
         <div className="hint">Checker probes chapter N+1 next.</div>
 
         <div className="actions">
           <button onClick=${onCancel} disabled=${saving}>Cancel</button>
-          <button className="primary" onClick=${handleSave} disabled=${!canSave}>${saving ? h`<span className="spinner"></span>` : 'Save'}</button>
+          <button className="primary" onClick=${handleSave} disabled=${!canSave}>
+            ${saving ? h`<span className="spinner" aria-hidden="true"></span><span className="sr-only">Saving</span>` : 'Save'}
+          </button>
         </div>
       </div>
     </div>
@@ -305,13 +366,14 @@ function App() {
   const [lastRun, setLastRun] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [dispatchedAt, setDispatchedAt] = useState(0);
+  const [cooldown, setCooldown] = useState(false);
   const [editing, setEditing] = useState(null);
 
   const api = pat ? makeApi(pat) : null;
 
   const loadAll = useCallback(async () => {
-    if (!api) return;
+    if (!pat) return;
+    const api = makeApi(pat);
     setLoading(true);
     setError(null);
     try {
@@ -338,6 +400,12 @@ function App() {
   }, [pat]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
+
+  useEffect(() => {
+    if (!cooldown) return;
+    const t = setTimeout(() => setCooldown(false), 10000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   async function persistSubs(nextSubs, message) {
     const text = yaml.dump({ subscription: nextSubs }, { lineWidth: 120 });
@@ -373,9 +441,7 @@ function App() {
     const nextSubs = existing
       ? subs.map(s => s.name === form.name ? { name: form.name, url: form.url, notify: form.notify } : s)
       : [...subs, { name: form.name, url: form.url, notify: form.notify }];
-
     await persistSubs(nextSubs, `chore(ui): ${existing ? 'update' : 'add'} ${form.name}`);
-
     const prevChapter = state[form.name] ?? 0;
     if (form.lastChapter !== prevChapter) {
       await persistState({ ...state, [form.name]: form.lastChapter }, `chore(ui): set ${form.name} chapter to ${form.lastChapter}`);
@@ -395,7 +461,7 @@ function App() {
   async function handleCheckNow() {
     try {
       await api.dispatch();
-      setDispatchedAt(Date.now());
+      setCooldown(true);
       setTimeout(loadAll, 6000);
     } catch (e) {
       alert(e.message);
@@ -412,15 +478,15 @@ function App() {
     return h`<${TokenGate} onSave=${v => { localStorage.setItem('gh_pat', v); setPat(v); }} />`;
   }
 
-  const dispatchCooldown = dispatchedAt && (Date.now() - dispatchedAt < 10000);
-
   return h`
     <div className="app">
       <div className="header">
         <h1>📖 Manga Checker</h1>
         <div className="header-actions">
-          <button onClick=${loadAll} disabled=${loading} title="Refresh">${loading ? h`<span className="spinner"></span>` : '⟳'}</button>
-          <button onClick=${handleSignOut} title="Sign out">⎋</button>
+          <button className="icon" onClick=${loadAll} disabled=${loading} aria-label="Refresh">
+            ${loading ? h`<span className="spinner" aria-hidden="true"></span>` : '⟳'}
+          </button>
+          <button className="icon" onClick=${handleSignOut} aria-label="Sign out">⎋</button>
         </div>
       </div>
 
@@ -430,7 +496,7 @@ function App() {
           : 'No runs yet.'}
       </div>
 
-      ${error ? h`<div className="error">${error}</div>` : null}
+      ${error ? h`<div className="error" role="alert">${error}</div>` : null}
 
       ${subs.length === 0 && !loading
         ? h`<div className="empty">No subscriptions yet. Add one below.</div>`
@@ -444,7 +510,7 @@ function App() {
 
       <div className="bar">
         <button className="primary" onClick=${() => setEditing({ isAdd: true })}>+ Add series</button>
-        <button onClick=${handleCheckNow} disabled=${dispatchCooldown}>${dispatchCooldown ? 'Queued…' : '▶ Check now'}</button>
+        <button onClick=${handleCheckNow} disabled=${cooldown}>${cooldown ? 'Queued…' : '▶ Check now'}</button>
       </div>
 
       ${editing ? h`<${AddEditModal}
@@ -458,7 +524,7 @@ function App() {
   `;
 }
 
-createRoot(document.getElementById('root')).render(h`<${App} />`);
+createRoot(document.getElementById('root')).render(h`<${ErrorBoundary}><${App} /><//>`);
 </script>
 </body>
 </html>
