@@ -54,3 +54,26 @@ The workflow commits `src/state.json` back to the default branch after each run 
    - `TG_TOKEN`
    - `TG_CHAT_ID`
 3. The schedule only runs on the default branch.
+
+## Web UI (GitHub Pages)
+
+`docs/index.html` is a single-file React app that lets you view subscriptions, edit `config/subscription.yaml` and `src/state.json` through the GitHub API, and trigger the checker on demand. Works on desktop and iPhone.
+
+### Enable Pages
+
+Repo → Settings → Pages → *Source*: **Deploy from a branch** → *Branch*: `master` / `/docs` → Save.
+
+URL: `https://<your-user>.github.io/comic-checker/`.
+
+### Create a fine-grained PAT
+
+GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token:
+
+- **Repository access**: Only select repositories → `comic-checker`
+- **Repository permissions**:
+  - **Contents**: Read and write
+  - **Actions**: Read and write
+  - **Metadata**: Read-only (auto)
+- Expiration: your choice (90 days recommended)
+
+Paste the token into the app on first visit. It's stored in `localStorage`; click the `⎋` button to clear it.
