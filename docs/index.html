@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Manga Checker</title>
-<link rel="icon" href="data:,">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <style>
   :root {
     --bg: #0f1115;
@@ -89,6 +89,7 @@ import htm from 'https://esm.sh/htm@3.1.1';
 import yaml from 'https://esm.sh/js-yaml@4.1.0';
 
 const h = htm.bind(React.createElement);
+const e = React.createElement;
 
 // ---------- repo targeting ----------
 function detectRepo() {
@@ -173,19 +174,50 @@ function formatUrl(template, chapter) {
 // ---------- components ----------
 function TokenGate({ onSave }) {
   const [value, setValue] = useState('');
-  return h`
-    <div className="gate">
-      <h1>📖 Manga Checker</h1>
-      <p>Paste a GitHub fine-grained PAT with <strong>Contents: Read &amp; Write</strong> and <strong>Actions: Read &amp; Write</strong> on <code>${REPO.owner}/${REPO.repo}</code>.</p>
-      <label>Personal Access Token</label>
-      <input type="password" placeholder="github_pat_..." value=${value} onChange=${e => setValue(e.target.value)}
-             onKeyDown=${e => { if (e.key === 'Enter' && value) onSave(value); }} />
-      <div className="gate-actions">
-        <button className="primary" onClick=${() => value && onSave(value)} disabled=${!value}>Save &amp; continue</button>
-      </div>
-      <p className="hint-footnote">Stored in <code>localStorage</code>. Sign out by clearing it (button in header).</p>
-    </div>
-  `;
+  const repoSlug = `${REPO.owner}/${REPO.repo}`;
+
+  return e('div', { className: 'gate' }, [
+    e('h1', { key: 'title' }, '📖 Manga Checker'),
+    e('p', { key: 'intro' }, [
+      'Paste a GitHub fine-grained PAT with ',
+      e('strong', { key: 'contents' }, 'Contents: Read & Write'),
+      ' and ',
+      e('strong', { key: 'actions' }, 'Actions: Read & Write'),
+      ' on ',
+      e('code', { key: 'repo' }, repoSlug),
+      '.',
+    ]),
+    e('label', { key: 'label' }, 'Personal Access Token'),
+    e('input', {
+      key: 'input',
+      type: 'password',
+      placeholder: 'github_pat_...',
+      value,
+      onChange: event => setValue(event.target.value),
+      onKeyDown: event => {
+        if (event.key === 'Enter' && value) {
+          onSave(value);
+        }
+      },
+    }),
+    e('div', { key: 'actions', className: 'gate-actions' }, [
+      e(
+        'button',
+        {
+          key: 'save',
+          className: 'primary',
+          onClick: () => value && onSave(value),
+          disabled: !value,
+        },
+        'Save & continue',
+      ),
+    ]),
+    e('p', { key: 'footnote', className: 'hint-footnote' }, [
+      'Stored in ',
+      e('code', { key: 'storage' }, 'localStorage'),
+      '. Sign out by clearing it (button in header).',
+    ]),
+  ]);
 }
 
 function MangaCard({ sub, lastChapter, onEdit, onRemove }) {
