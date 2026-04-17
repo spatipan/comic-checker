@@ -17,6 +17,16 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 logger = logging.getLogger(__name__)
 
+REQUEST_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/135.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
 def load_state() -> dict:
     if STATE_FILE.exists():
         with open(STATE_FILE, "r") as f:
@@ -44,9 +54,36 @@ def load_subscription() -> list:
 
 def check_chapter(url) -> bool:
     try:
-        response = httpx.head(url, follow_redirects=True, timeout=10)
-        logger.debug("chapter_checked url=%s status_code=%s", url, response.status_code)
-        return response.status_code == 200
+        response = httpx.head(
+            url,
+            follow_redirects=True,
+            timeout=10,
+            headers=REQUEST_HEADERS,
+        )
+        logger.debug(
+            "chapter_checked method=HEAD url=%s status_code=%s",
+            url,
+            response.status_code,
+        )
+
+        if response.status_code == 200:
+            return True
+
+        if response.status_code in {403, 405}:
+            fallback = httpx.get(
+                url,
+                follow_redirects=True,
+                timeout=10,
+                headers=REQUEST_HEADERS,
+            )
+            logger.debug(
+                "chapter_checked method=GET url=%s status_code=%s",
+                url,
+                fallback.status_code,
+            )
+            return fallback.status_code == 200
+
+        return False
     except httpx.RequestError as exc:
         logger.error("chapter_check_failed url=%s error=%s", url, exc)
         return False
