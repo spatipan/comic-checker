@@ -25,6 +25,7 @@
     --danger: #f7768e;
     --ok: #9ece6a;
     --warn: #e0af68;
+    --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.35);
   }
   @media (prefers-color-scheme: light) {
     :root {
@@ -39,97 +40,188 @@
       --danger: #d23f57;
       --ok: #2e8b3e;
       --warn: #b67214;
+      --shadow-pop: 0 8px 24px rgba(10, 15, 30, 0.12);
     }
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%; -webkit-text-size-adjust: 100%;
+  }
   a { color: var(--accent); }
+  a:hover { text-decoration-thickness: 2px; text-underline-offset: 2px; }
+
   button {
-    font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    font: inherit; cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text);
     padding: 8px 14px; border-radius: 8px; min-height: 44px;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background-color 150ms ease-out, border-color 150ms ease-out,
+                color 150ms ease-out, transform 100ms ease-out;
+    -webkit-tap-highlight-color: transparent;
   }
   button:hover:not(:disabled) { border-color: var(--accent); }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:active:not(:disabled) { transform: scale(0.97); }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
   button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-  button.danger { color: var(--danger); }
+  button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+  button.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
+  button.danger.armed { background: var(--danger); color: var(--accent-fg); border-color: var(--danger); }
   button.icon { min-width: 44px; padding: 8px; }
+
   input[type=text], input[type=number], input[type=password], input[type=url] {
-    font: inherit; background: var(--surface); color: var(--text); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 12px; min-height: 44px; width: 100%;
+    font: inherit; background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; min-height: 44px; width: 100%;
+    transition: border-color 150ms ease-out, background-color 150ms ease-out;
   }
-  input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  label { display: block; margin: 12px 0 4px; color: var(--muted); font-size: 13px; }
-  label.inline { display: inline-flex; align-items: center; gap: 8px; margin: 12px 0; }
-  label.inline input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); }
+  input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  input::placeholder { color: var(--muted); opacity: 0.55; }
+
+  label { display: block; margin: 14px 0 4px; color: var(--muted); font-size: 13px; font-weight: 500; letter-spacing: 0.01em; }
+  label.inline { display: inline-flex; align-items: center; gap: 10px; margin: 14px 0; font-size: 15px; color: var(--text); font-weight: 400; }
+  label.inline input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
+  code { background: var(--surface-2); padding: 1px 6px; border-radius: 4px; font-size: 0.92em; }
 
   .app {
     max-width: 720px; margin: 0 auto;
     padding: max(16px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
   }
-  .header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
-  .header h1 { font-size: 18px; margin: 0; }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 18px;
+  }
+  .header h1 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
   .header-actions { display: flex; gap: 8px; align-items: center; }
-  .meta { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
-  .card h2 { font-size: 16px; margin: 0 0 4px; }
-  .card .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .status { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .status .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); }
+
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .meta a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; }
+  .meta a:hover { text-decoration-color: var(--accent); color: var(--text); }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot.ok   { background: var(--ok); }
+  .dot.err  { background: var(--danger); }
+  .dot.prog { background: var(--warn); animation: pulse 1.6s ease-in-out infinite; }
+  .dot.idle { background: var(--muted); opacity: 0.5; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+    animation: fadeIn 260ms ease-out both;
+  }
+  .card h2 { font-size: 16px; margin: 0 0 4px; letter-spacing: -0.005em; }
+  .card .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+  .status { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .status .chip {
+    display: inline-flex; align-items: center; padding: 3px 10px;
+    border-radius: 999px; background: var(--surface-2); color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
   .bar {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: saturate(140%) blur(10px);
-    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: saturate(160%) blur(12px);
+    -webkit-backdrop-filter: saturate(160%) blur(12px);
     border-top: 1px solid var(--border);
     padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
     display: flex; gap: 8px; justify-content: center;
   }
-  .error { color: var(--danger); padding: 10px 12px; background: var(--surface); border: 1px solid var(--danger); border-radius: 8px; margin-bottom: 12px; }
-  .muted { color: var(--muted); }
-  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
-  .field-error { color: var(--danger); font-size: 13px; margin-top: 4px; }
+
+  .error {
+    color: var(--danger); padding: 12px 14px;
+    background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+    border-radius: 10px; margin-bottom: 14px; font-size: 14px;
+  }
+
+  .empty { text-align: center; padding: 72px 20px 48px; color: var(--muted); }
+  .empty-emoji { font-size: 44px; opacity: 0.55; line-height: 1; margin-bottom: 14px; }
+  .empty h3 { margin: 0 0 6px; font-size: 17px; color: var(--text); font-weight: 500; letter-spacing: -0.005em; }
+  .empty p { margin: 0; font-size: 14px; }
+
+  .skeleton {
+    height: 88px; border-radius: 12px; margin-bottom: 10px;
+    border: 1px solid var(--border);
+    background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  .field-error { color: var(--danger); font-size: 13px; margin-top: 6px; }
   .hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
   .hint-footnote { font-size: 13px; color: var(--muted); margin-top: 16px; }
-  .gate-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
+
+  .gate {
+    max-width: 440px; margin: 8vh auto 0; padding: 28px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    animation: fadeIn 320ms ease-out both;
+  }
+  .gate h1 { margin: 0 0 10px; font-size: 20px; letter-spacing: -0.01em; }
+  .gate p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+  .gate-actions { margin-top: 18px; display: flex; justify-content: flex-end; }
 
   .modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55);
     display: flex; align-items: flex-end; justify-content: center;
     padding: 0; z-index: 10;
+    animation: fadeIn 180ms ease-out;
   }
   @media (min-width: 560px) {
     .modal-bg { align-items: center; padding: 16px; }
   }
   .modal {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px 16px 0 0; padding: 18px;
-    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0; padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
     max-width: 480px; width: 100%;
     max-height: calc(100dvh - 32px); overflow-y: auto;
-    animation: slideUp 180ms ease-out;
+    box-shadow: var(--shadow-pop);
+    animation: slideUp 200ms cubic-bezier(0.2, 0.8, 0.3, 1);
   }
   @media (min-width: 560px) { .modal { border-radius: 16px; } }
-  @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .modal h2 { margin: 0 0 10px; font-size: 17px; }
-  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .modal h2 { margin: 0 0 6px; font-size: 18px; letter-spacing: -0.01em; }
+  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 
-  .gate {
-    max-width: 440px; margin: 60px auto; padding: 24px;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  .toast {
+    position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); box-shadow: var(--shadow-pop);
+    padding: 10px 16px; border-radius: 999px; font-size: 14px;
+    z-index: 20; display: flex; align-items: center; gap: 8px;
+    animation: toastIn 200ms ease-out;
+    pointer-events: none;
   }
-  .gate h1 { margin-top: 0; font-size: 20px; }
-  .gate p { color: var(--muted); font-size: 14px; }
+
   .spinner {
     display: inline-block; width: 16px; height: 16px;
     border: 2px solid currentColor; border-top-color: transparent;
-    border-radius: 50%; animation: spin 0.8s linear infinite;
+    border-radius: 50%; animation: spin 0.75s linear infinite; flex-shrink: 0;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
   .sr-only {
-    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
-    clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  @keyframes toastIn { from { transform: translate(-50%, -8px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 </style>
 </head>
@@ -137,7 +229,7 @@
 <div id="root"></div>
 
 <script type="module">
-import React, { useState, useEffect, useCallback, useRef, useId } from 'https://esm.sh/react@18.3.1';
+import React, { useState, useEffect, useCallback, useRef, useId, useMemo } from 'https://esm.sh/react@18.3.1';
 import { createRoot } from 'https://esm.sh/react-dom@18.3.1/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import yaml from 'https://esm.sh/js-yaml@4.1.0';
@@ -215,6 +307,17 @@ function relativeTime(iso) {
   return `${Math.floor(diff / 86400)} d ago`;
 }
 
+function statusPresentation(run) {
+  if (!run) return { text: '—', kind: 'idle' };
+  if (run.status === 'in_progress') return { text: 'running', kind: 'prog' };
+  if (run.status === 'queued' || run.status === 'waiting') return { text: 'queued', kind: 'prog' };
+  const c = run.conclusion;
+  if (c === 'success')  return { text: 'success', kind: 'ok' };
+  if (c === 'failure' || c === 'startup_failure') return { text: 'failed', kind: 'err' };
+  if (c === 'cancelled' || c === 'timed_out') return { text: c.replace('_', ' '), kind: 'err' };
+  return { text: c || run.status || '—', kind: 'idle' };
+}
+
 const formatUrl = (template, chapter) => template.replace('{chapter}', chapter);
 
 // ---------- error boundary ----------
@@ -245,33 +348,53 @@ function TokenGate({ onSave }) {
   return h`
     <div className="gate">
       <h1>📖 Manga Checker</h1>
-      <p>Paste a GitHub fine-grained PAT with <strong>Contents: Read & Write</strong> and <strong>Actions: Read & Write</strong> on <code>${repoSlug}</code>.</p>
-      <label htmlFor=${tokenId}>Personal Access Token</label>
-      <input id=${tokenId} type="password" placeholder="github_pat_..." autoComplete="off"
+      <p>Paste a GitHub fine-grained PAT with <strong>Contents</strong> and <strong>Actions</strong> read/write access on <code>${repoSlug}</code>.</p>
+      <label htmlFor=${tokenId}>Personal access token</label>
+      <input id=${tokenId} type="password" placeholder="github_pat_..."
+             autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck=${false}
              value=${value}
              onChange=${ev => setValue(ev.target.value)}
              onKeyDown=${ev => { if (ev.key === 'Enter' && value) onSave(value); }} />
       <div className="gate-actions">
         <button className="primary" onClick=${() => value && onSave(value)} disabled=${!value}>Save & continue</button>
       </div>
-      <p className="hint-footnote">Stored in <code>localStorage</code>. Sign out to clear it.</p>
+      <p className="hint-footnote">Stored only in this browser. Sign out to clear it.</p>
     </div>
   `;
 }
 
 function MangaCard({ sub, lastChapter, onEdit, onRemove }) {
+  const [armed, setArmed] = useState(false);
   const readUrl = lastChapter > 0 ? formatUrl(sub.url, lastChapter) : null;
+
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(t);
+  }, [armed]);
+
+  function handleRemoveClick() {
+    if (armed) { onRemove(); setArmed(false); }
+    else setArmed(true);
+  }
+
   return h`
     <div className="card">
       <h2>${sub.name}</h2>
       <div className="status">
         <span className="chip">Ch. ${lastChapter || '—'}</span>
-        <span>${sub.notify ? '🔔 notify on' : '🔕 notify off'}</span>
+        <span>${sub.notify ? '🔔 notify' : '🔕 silent'}</span>
       </div>
       <div className="row">
         ${readUrl ? h`<a href=${readUrl} target="_blank" rel="noopener"><button>Read</button></a>` : null}
         <button onClick=${onEdit}>Edit</button>
-        <button className="danger" onClick=${onRemove}>Remove</button>
+        <button
+          className=${`danger ${armed ? 'armed' : ''}`}
+          onClick=${handleRemoveClick}
+          aria-label=${armed ? `Confirm remove ${sub.name}` : `Remove ${sub.name}`}
+        >
+          ${armed ? 'Tap again to confirm' : 'Remove'}
+        </button>
       </div>
     </div>
   `;
@@ -319,21 +442,29 @@ function AddEditModal({ initial, isAdd, existingNames, onSave, onCancel }) {
     }
   }
 
+  const nextChapter = (Number(lastChapter) || 0) + 1;
+
   return h`
     <div className="modal-bg" onClick=${(ev) => { if (ev.target === ev.currentTarget) onCancel(); }}>
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby=${titleId}>
         <h2 id=${titleId}>${isAdd ? 'Add series' : 'Edit series'}</h2>
+        <p className="hint" style=${{ marginTop: 0, marginBottom: '6px' }}>
+          ${isAdd ? 'Track a new manga by URL pattern.' : 'Update metadata or last-known chapter.'}
+        </p>
 
         <label htmlFor=${nameId}>Name</label>
         <input id=${nameId} ref=${firstFieldRef} type="text" value=${name}
-               onChange=${ev => setName(ev.target.value)} disabled=${!isAdd} />
-        ${nameConflict ? h`<div className="field-error" role="alert">Name already exists.</div>` : null}
+               onChange=${ev => setName(ev.target.value)} disabled=${!isAdd}
+               placeholder="e.g. Eternally Regressing Knight" />
+        ${nameConflict ? h`<div className="field-error" role="alert">A series with this name already exists.</div>` : null}
 
-        <label htmlFor=${urlId}>URL template (must contain <code>{chapter}</code>)</label>
+        <label htmlFor=${urlId}>URL template</label>
         <input id=${urlId} type="url" value=${url}
+               autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck=${false}
                onChange=${ev => setUrl(ev.target.value)}
                placeholder="https://example.com/series-chapter-{chapter}/" />
-        ${url && !urlValid ? h`<div className="field-error" role="alert">Missing {chapter} placeholder.</div>` : null}
+        <div className="hint">Must contain <code>{chapter}</code> as the placeholder.</div>
+        ${url && !urlValid ? h`<div className="field-error" role="alert">Missing <code>{chapter}</code> placeholder.</div>` : null}
 
         <label className="inline" htmlFor=${notifyId}>
           <input id=${notifyId} type="checkbox" checked=${notify} onChange=${ev => setNotify(ev.target.checked)} />
@@ -343,17 +474,24 @@ function AddEditModal({ initial, isAdd, existingNames, onSave, onCancel }) {
         <label htmlFor=${chapterId}>Last known chapter</label>
         <input id=${chapterId} type="number" min="0" inputMode="numeric" value=${lastChapter}
                onChange=${ev => setLastChapter(ev.target.value)} />
-        <div className="hint">Checker probes chapter N+1 next.</div>
+        <div className="hint">Next check will probe chapter ${nextChapter}.</div>
 
         <div className="actions">
           <button onClick=${onCancel} disabled=${saving}>Cancel</button>
           <button className="primary" onClick=${handleSave} disabled=${!canSave}>
-            ${saving ? h`<span className="spinner" aria-hidden="true"></span><span className="sr-only">Saving</span>` : 'Save'}
+            ${saving
+              ? h`<${React.Fragment}><span className="spinner" aria-hidden="true"></span><span>Saving</span><//>`
+              : 'Save'}
           </button>
         </div>
       </div>
     </div>
   `;
+}
+
+function Toast({ message }) {
+  if (!message) return null;
+  return h`<div className="toast" role="status" aria-live="polite">${message}</div>`;
 }
 
 // ---------- App ----------
@@ -365,15 +503,21 @@ function App() {
   const [stateSha, setStateSha] = useState(null);
   const [lastRun, setLastRun] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState(null);
   const [cooldown, setCooldown] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  const api = pat ? makeApi(pat) : null;
+  const api = useMemo(() => (pat ? makeApi(pat) : null), [pat]);
+
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(t => (t === msg ? null : t)), 2400);
+  }
 
   const loadAll = useCallback(async () => {
-    if (!pat) return;
-    const api = makeApi(pat);
+    if (!api) return;
     setLoading(true);
     setError(null);
     try {
@@ -396,8 +540,9 @@ function App() {
       }
     } finally {
       setLoading(false);
+      setInitialized(true);
     }
-  }, [pat]);
+  }, [api]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
@@ -415,7 +560,7 @@ function App() {
       setSubsSha(res.content.sha);
     } catch (e) {
       if (e.status === 409 || e.status === 422) {
-        alert('Config changed externally — refresh and retry.');
+        showToast('Config changed elsewhere — reloading');
         await loadAll();
       }
       throw e;
@@ -447,12 +592,13 @@ function App() {
       await persistState({ ...state, [form.name]: form.lastChapter }, `chore(ui): set ${form.name} chapter to ${form.lastChapter}`);
     }
     setEditing(null);
+    showToast(existing ? 'Saved' : `Added ${form.name}`);
   }
 
   async function handleRemove(name) {
-    if (!confirm(`Remove "${name}"?`)) return;
     try {
       await persistSubs(subs.filter(s => s.name !== name), `chore(ui): remove ${name}`);
+      showToast(`Removed ${name}`);
     } catch (e) {
       alert(e.message);
     }
@@ -462,6 +608,7 @@ function App() {
     try {
       await api.dispatch();
       setCooldown(true);
+      showToast('Check queued');
       setTimeout(loadAll, 6000);
     } catch (e) {
       alert(e.message);
@@ -478,6 +625,9 @@ function App() {
     return h`<${TokenGate} onSave=${v => { localStorage.setItem('gh_pat', v); setPat(v); }} />`;
   }
 
+  const runUI = statusPresentation(lastRun);
+  const showSkeleton = loading && !initialized;
+
   return h`
     <div className="app">
       <div className="header">
@@ -492,25 +642,41 @@ function App() {
 
       <div className="meta">
         ${lastRun
-          ? h`Last run: ${relativeTime(lastRun.updated_at)} · <a href=${lastRun.html_url} target="_blank" rel="noopener">${lastRun.conclusion || lastRun.status}</a>`
-          : 'No runs yet.'}
+          ? h`<span className=${`dot ${runUI.kind}`} aria-hidden="true"></span>
+              Last checked ${relativeTime(lastRun.updated_at)} · <a href=${lastRun.html_url} target="_blank" rel="noopener">${runUI.text}</a>`
+          : initialized ? "Hasn't checked yet." : 'Loading…'}
       </div>
 
       ${error ? h`<div className="error" role="alert">${error}</div>` : null}
 
-      ${subs.length === 0 && !loading
-        ? h`<div className="empty">No subscriptions yet. Add one below.</div>`
-        : subs.map(sub => h`<${MangaCard}
-            key=${sub.name}
-            sub=${sub}
-            lastChapter=${state[sub.name] || 0}
-            onEdit=${() => setEditing({ isAdd: false, sub: { ...sub, lastChapter: state[sub.name] || 0 } })}
-            onRemove=${() => handleRemove(sub.name)}
-          />`)}
+      ${showSkeleton
+        ? h`<${React.Fragment}>
+            <div className="skeleton" aria-hidden="true"></div>
+            <div className="skeleton" aria-hidden="true"></div>
+            <div className="skeleton" aria-hidden="true"></div>
+          <//>`
+        : subs.length === 0
+          ? h`<div className="empty">
+              <div className="empty-emoji" aria-hidden="true">📚</div>
+              <h3>Nothing tracked yet</h3>
+              <p>Add your first series to start watching for new chapters.</p>
+            </div>`
+          : subs.map(sub => h`<${MangaCard}
+              key=${sub.name}
+              sub=${sub}
+              lastChapter=${state[sub.name] || 0}
+              onEdit=${() => setEditing({ isAdd: false, sub: { ...sub, lastChapter: state[sub.name] || 0 } })}
+              onRemove=${() => handleRemove(sub.name)}
+            />`)
+      }
 
       <div className="bar">
         <button className="primary" onClick=${() => setEditing({ isAdd: true })}>+ Add series</button>
-        <button onClick=${handleCheckNow} disabled=${cooldown}>${cooldown ? 'Queued…' : '▶ Check now'}</button>
+        <button onClick=${handleCheckNow} disabled=${cooldown}>
+          ${cooldown
+            ? h`<${React.Fragment}><span className="spinner" aria-hidden="true"></span><span>Queued</span><//>`
+            : '▶ Check now'}
+        </button>
       </div>
 
       ${editing ? h`<${AddEditModal}
@@ -520,6 +686,8 @@ function App() {
         onSave=${handleSave}
         onCancel=${() => setEditing(null)}
       />` : null}
+
+      <${Toast} message=${toast} />
     </div>
   `;
 }
