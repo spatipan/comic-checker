@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Manga Checker</title>
+<link rel="icon" href="data:,">
 <style>
   :root {
     --bg: #0f1115;
@@ -50,7 +51,8 @@
   .app { max-width: 720px; margin: 0 auto; padding: 20px 16px 80px; }
   .header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
   .header h1 { font-size: 18px; margin: 0; }
-  .meta { color: var(--muted); font-size: 13px; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
   .card h2 { font-size: 16px; margin: 0 0 4px; }
   .card .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
@@ -60,6 +62,10 @@
   .error { color: var(--danger); padding: 10px; background: var(--surface); border: 1px solid var(--danger); border-radius: 8px; margin-bottom: 12px; }
   .muted { color: var(--muted); }
   .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .field-error { color: var(--danger); font-size: 12px; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .hint-footnote { font-size: 12px; color: var(--muted); margin-top: 16px; }
+  .gate-actions { margin-top: 14px; display: flex; justify-content: flex-end; }
 
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; max-width: 480px; width: 100%; }
@@ -168,16 +174,16 @@ function formatUrl(template, chapter) {
 function TokenGate({ onSave }) {
   const [value, setValue] = useState('');
   return h`
-    <div class="gate">
+    <div className="gate">
       <h1>📖 Manga Checker</h1>
       <p>Paste a GitHub fine-grained PAT with <strong>Contents: Read &amp; Write</strong> and <strong>Actions: Read &amp; Write</strong> on <code>${REPO.owner}/${REPO.repo}</code>.</p>
       <label>Personal Access Token</label>
       <input type="password" placeholder="github_pat_..." value=${value} onChange=${e => setValue(e.target.value)}
-             onKeyDown=${e => e.key === 'Enter' && value && onSave(value)} />
-      <div style="margin-top:14px; display:flex; justify-content:flex-end;">
-        <button class="primary" onClick=${() => value && onSave(value)} disabled=${!value}>Save &amp; continue</button>
+             onKeyDown=${e => { if (e.key === 'Enter' && value) onSave(value); }} />
+      <div className="gate-actions">
+        <button className="primary" onClick=${() => value && onSave(value)} disabled=${!value}>Save &amp; continue</button>
       </div>
-      <p class="muted" style="font-size:12px;margin-top:16px;">Stored in <code>localStorage</code>. Sign out by clearing it (button in header).</p>
+      <p className="hint-footnote">Stored in <code>localStorage</code>. Sign out by clearing it (button in header).</p>
     </div>
   `;
 }
@@ -185,16 +191,16 @@ function TokenGate({ onSave }) {
 function MangaCard({ sub, lastChapter, onEdit, onRemove }) {
   const readUrl = lastChapter > 0 ? formatUrl(sub.url, lastChapter) : null;
   return h`
-    <div class="card">
+    <div className="card">
       <h2>${sub.name}</h2>
-      <div class="status">
-        <span class="chip">Ch. ${lastChapter || '—'}</span>
+      <div className="status">
+        <span className="chip">Ch. ${lastChapter || '—'}</span>
         <span>${sub.notify ? '🔔 notify on' : '🔕 notify off'}</span>
       </div>
-      <div class="row">
+      <div className="row">
         ${readUrl ? h`<a href=${readUrl} target="_blank" rel="noopener"><button>Read</button></a>` : null}
         <button onClick=${onEdit}>Edit</button>
-        <button class="danger" onClick=${onRemove}>Remove</button>
+        <button className="danger" onClick=${onRemove}>Remove</button>
       </div>
     </div>
   `;
@@ -227,18 +233,18 @@ function AddEditModal({ initial, isAdd, existingNames, onSave, onCancel }) {
   }
 
   return h`
-    <div class="modal-bg" onClick=${e => e.target === e.currentTarget && onCancel()}>
-      <div class="modal">
+    <div className="modal-bg" onClick=${e => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div className="modal">
         <h2>${isAdd ? 'Add series' : 'Edit series'}</h2>
 
         <label>Name</label>
         <input type="text" value=${name} onChange=${e => setName(e.target.value)} disabled=${!isAdd} />
-        ${nameConflict ? h`<div class="muted" style="color:var(--danger);font-size:12px;">Name already exists.</div>` : null}
+        ${nameConflict ? h`<div className="field-error">Name already exists.</div>` : null}
 
         <label>URL template (must contain <code>{chapter}</code>)</label>
         <input type="url" value=${url} onChange=${e => setUrl(e.target.value)}
                placeholder="https://example.com/series-chapter-{chapter}/" />
-        ${url && !urlValid ? h`<div class="muted" style="color:var(--danger);font-size:12px;">Missing {chapter} placeholder.</div>` : null}
+        ${url && !urlValid ? h`<div className="field-error">Missing {chapter} placeholder.</div>` : null}
 
         <label>
           <input type="checkbox" checked=${notify} onChange=${e => setNotify(e.target.checked)} /> Notify on new chapter
@@ -246,11 +252,11 @@ function AddEditModal({ initial, isAdd, existingNames, onSave, onCancel }) {
 
         <label>Last known chapter</label>
         <input type="number" min="0" value=${lastChapter} onChange=${e => setLastChapter(e.target.value)} />
-        <div class="muted" style="font-size:12px;">Checker probes chapter N+1 next.</div>
+        <div className="hint">Checker probes chapter N+1 next.</div>
 
-        <div class="actions">
+        <div className="actions">
           <button onClick=${onCancel} disabled=${saving}>Cancel</button>
-          <button class="primary" onClick=${handleSave} disabled=${!canSave}>${saving ? h`<span class="spinner"></span>` : 'Save'}</button>
+          <button className="primary" onClick=${handleSave} disabled=${!canSave}>${saving ? h`<span className="spinner"></span>` : 'Save'}</button>
         </div>
       </div>
     </div>
@@ -268,7 +274,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dispatchedAt, setDispatchedAt] = useState(0);
-  const [editing, setEditing] = useState(null); // {isAdd, sub?} | null
+  const [editing, setEditing] = useState(null);
 
   const api = pat ? makeApi(pat) : null;
 
@@ -318,7 +324,6 @@ function App() {
 
   async function persistState(nextState, message) {
     const text = JSON.stringify(nextState, null, 2) + '\n';
-    // refetch sha if we never had one (state.json didn't exist yet)
     let sha = stateSha;
     if (!sha) {
       try {
@@ -378,25 +383,25 @@ function App() {
   const dispatchCooldown = dispatchedAt && (Date.now() - dispatchedAt < 10000);
 
   return h`
-    <div class="app">
-      <div class="header">
+    <div className="app">
+      <div className="header">
         <h1>📖 Manga Checker</h1>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button onClick=${loadAll} disabled=${loading} title="Refresh">${loading ? h`<span class="spinner"></span>` : '⟳'}</button>
+        <div className="header-actions">
+          <button onClick=${loadAll} disabled=${loading} title="Refresh">${loading ? h`<span className="spinner"></span>` : '⟳'}</button>
           <button onClick=${handleSignOut} title="Sign out">⎋</button>
         </div>
       </div>
 
-      <div class="meta" style="margin-bottom:12px;">
+      <div className="meta">
         ${lastRun
           ? h`Last run: ${relativeTime(lastRun.updated_at)} · <a href=${lastRun.html_url} target="_blank" rel="noopener">${lastRun.conclusion || lastRun.status}</a>`
           : 'No runs yet.'}
       </div>
 
-      ${error ? h`<div class="error">${error}</div>` : null}
+      ${error ? h`<div className="error">${error}</div>` : null}
 
       ${subs.length === 0 && !loading
-        ? h`<div class="empty">No subscriptions yet. Add one below.</div>`
+        ? h`<div className="empty">No subscriptions yet. Add one below.</div>`
         : subs.map(sub => h`<${MangaCard}
             key=${sub.name}
             sub=${sub}
@@ -405,8 +410,8 @@ function App() {
             onRemove=${() => handleRemove(sub.name)}
           />`)}
 
-      <div class="bar">
-        <button class="primary" onClick=${() => setEditing({ isAdd: true })}>+ Add series</button>
+      <div className="bar">
+        <button className="primary" onClick=${() => setEditing({ isAdd: true })}>+ Add series</button>
         <button onClick=${handleCheckNow} disabled=${dispatchCooldown}>${dispatchCooldown ? 'Queued…' : '▶ Check now'}</button>
       </div>
 
