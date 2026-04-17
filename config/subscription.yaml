@@ -1,0 +1,8 @@
+
+subscription:
+  - name: "Eternally Regressing Knight"
+    type: manhwa
+    url: https://w8.regressingknight.com/eternally-regressing-knight-chapter-{chapter}/
+    notify: true
+
+
