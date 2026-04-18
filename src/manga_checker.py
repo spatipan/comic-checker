@@ -3,6 +3,7 @@ import argparse
 import httpx
 import yaml
 import os
+import re
 from dotenv import load_dotenv
 from pathlib import Path
 import logging
@@ -23,6 +24,7 @@ TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 logger = logging.getLogger(__name__)
+CHAPTER_RE = re.compile(r"chapter-(\d+)")
 
 def load_state() -> dict:
     if STATE_FILE.exists():
@@ -136,6 +138,43 @@ def check_chapter(manga, chapter, strategy) -> bool:
         logger.error("chapter_check_failed method=%s url=%s error=%s", check_method, url, exc)
         return False
 
+
+def get_redirect_latest_chapter(manga, last_chapter, strategy):
+    url = manga["url"].format(chapter=last_chapter)
+    try:
+        if strategy.get("use_cffi"):
+            response = cffi_requests.get(
+                url,
+                allow_redirects=True,
+                timeout=10,
+                impersonate="chrome136",
+                headers={"referer": strategy.get("referer")},
+            )
+            final_url = str(response.url)
+            status_code = response.status_code
+        else:
+            response = httpx.get(
+                url,
+                follow_redirects=True,
+                timeout=10,
+            )
+            final_url = str(response.url)
+            status_code = response.status_code
+
+        match = CHAPTER_RE.search(final_url)
+        latest_chapter = int(match.group(1)) if match else None
+        logger.debug(
+            "chapter_checked method=redirect_latest url=%s status_code=%s final_url=%s latest_chapter=%s",
+            url,
+            status_code,
+            final_url,
+            latest_chapter,
+        )
+        return latest_chapter
+    except (httpx.RequestError, cffi_requests.RequestsError) as exc:
+        logger.error("chapter_check_failed method=redirect_latest url=%s error=%s", url, exc)
+        return None
+
 def notify(message: str) -> None:
     if not TG_TOKEN or not TG_CHAT_ID:
         logger.warning("notify_skipped reason=missing_telegram_env")
@@ -173,6 +212,19 @@ def run_check() -> None:
         next_chapter = last_chapter + 1
 
         logger.info("series_check_started name=%s next_chapter=%s", name, next_chapter)
+
+        if strategy.get("method") == "redirect_latest":
+            latest_chapter = get_redirect_latest_chapter(manga, last_chapter, strategy)
+            if latest_chapter and latest_chapter > last_chapter:
+                for chapter in range(last_chapter + 1, latest_chapter + 1):
+                    url = manga["url"].format(chapter=chapter)
+                    if notify_on_new:
+                        notify(f"New chapter available for {name}: Chapter {chapter}\n{url}")
+                    logger.info("chapter_found name=%s chapter=%s", name, chapter)
+                state_entry["last_chapter"] = latest_chapter
+            logger.info("series_check_finished name=%s latest_known_chapter=%s", name, state_entry["last_chapter"])
+            save_state(state)
+            continue
 
         while True:
             url = manga["url"].format(chapter=next_chapter)

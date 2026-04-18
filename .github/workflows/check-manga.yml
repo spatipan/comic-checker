@@ -1,5 +1,5 @@
 name: check-manga
-run-name: "${{ github.event.inputs.mode == 'probe' && format('probe: {0}', github.event.inputs.name) || 'check' }}"
+run-name: "${{ github.event.inputs.mode == 'probe' && format('probe: {0} [{1}]', github.event.inputs.name, github.event.inputs.request_id) || 'check' }}"
 
 on:
   # 08:00 / 14:00 / 20:00 Bangkok (ICT, UTC+7) = 01:00 / 07:00 / 13:00 UTC
@@ -23,6 +23,10 @@ on:
         type: string
       known_chapter:
         description: Known good chapter for probe mode
+        required: false
+        type: string
+      request_id:
+        description: Unique probe request id
         required: false
         type: string
 
@@ -56,6 +60,7 @@ jobs:
           PROBE_NAME: ${{ github.event.inputs.name || '' }}
           PROBE_URL: ${{ github.event.inputs.url || '' }}
           PROBE_KNOWN_CHAPTER: ${{ github.event.inputs.known_chapter || '' }}
+          PROBE_REQUEST_ID: ${{ github.event.inputs.request_id || '' }}
         run: |
           if [ "$MODE" = "probe" ]; then
             uv run python main.py --mode probe --name "$PROBE_NAME" --url "$PROBE_URL" --known-chapter "$PROBE_KNOWN_CHAPTER"

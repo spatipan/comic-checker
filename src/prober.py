@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from urllib.parse import urlparse
 
 import httpx
@@ -13,6 +14,7 @@ PROBE_TESTS = [
 ]
 
 KEYWORDS = ["404", "not found", "not available", "does not exist"]
+CHAPTER_RE = re.compile(r"chapter-(\d+)")
 
 
 def derive_referer(url_template: str) -> str:
@@ -106,6 +108,22 @@ def analyze_probe_results(results: dict, known_chapter: int, referer: str) -> di
     next_cffi = next_result.get("cffi")
     if not known_cffi or not fake_cffi:
         return {"method": "unknown", "use_cffi": True, "referer": referer}
+
+    redirected_match = CHAPTER_RE.search(known_cffi["final_url"])
+    if (
+        known_cffi["status_code"] == 200
+        and fake_cffi["status_code"] == 200
+        and known_cffi["final_url"] == fake_cffi["final_url"]
+        and known_cffi["final_url"] != known["url"]
+        and redirected_match
+    ):
+        redirected_chapter = int(redirected_match.group(1))
+        if redirected_chapter != known_chapter:
+            return {
+                "method": "redirect_latest",
+                "use_cffi": True,
+                "referer": referer,
+            }
 
     known_has_title = f"Chapter {known_chapter}" in known_cffi["text_head"]
     fake_has_title = f"Chapter 99999" in fake_cffi["text_head"]

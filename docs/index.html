@@ -587,7 +587,7 @@ function App() {
     setStateSha(res.content.sha);
   }
 
-  async function waitForProbe(name, expectedChapter, startedAt) {
+  async function waitForProbe(name, expectedChapter, requestId) {
     const deadline = Date.now() + 180000;
     while (Date.now() < deadline) {
       const [stateRes, runs] = await Promise.all([
@@ -602,10 +602,7 @@ function App() {
         return parsedState;
       }
 
-      const probeRun = runs.find(run =>
-        (run.display_title || '').startsWith(`probe: ${name}`) &&
-        new Date(run.created_at).getTime() >= startedAt - 1000
-      );
+      const probeRun = runs.find(run => (run.display_title || '').includes(`[${requestId}]`));
       if (probeRun && probeRun.status === 'completed' && probeRun.conclusion !== 'success') {
         throw new Error(`Probe failed: ${probeRun.conclusion}`);
       }
@@ -615,19 +612,37 @@ function App() {
     throw new Error('Probe timed out before state.json was updated.');
   }
 
+  async function waitForCheck(previousRunId, dispatchedAt) {
+    const deadline = Date.now() + 180000;
+    while (Date.now() < deadline) {
+      const run = await api.lastRun().catch(() => null);
+      const isFreshRun = run && (
+        (previousRunId && run.id !== previousRunId) ||
+        new Date(run.created_at || run.updated_at || 0).getTime() >= dispatchedAt - 1000
+      );
+      if (run && isFreshRun && run.status === 'completed') {
+        setLastRun(run);
+        return run;
+      }
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    throw new Error('Check timed out before the workflow completed.');
+  }
+
   async function handleSave(form) {
     const existing = subs.find(s => s.name === form.name);
     let currentState = state;
     if (!existing) {
-      const startedAt = Date.now();
+      const requestId = `probe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       showToast('Probing site…');
       await api.dispatch({
         mode: 'probe',
         name: form.name,
         url: form.url,
         known_chapter: String(form.lastChapter),
+        request_id: requestId,
       });
-      currentState = await waitForProbe(form.name, form.lastChapter, startedAt);
+      currentState = await waitForProbe(form.name, form.lastChapter, requestId);
     }
 
     const nextSubs = existing
@@ -664,10 +679,14 @@ function App() {
 
   async function handleCheckNow() {
     try {
+      const previousRun = await api.lastRun().catch(() => null);
+      const dispatchedAt = Date.now();
       await api.dispatch();
       setCooldown(true);
       showToast('Check queued');
-      setTimeout(loadAll, 6000);
+      const run = await waitForCheck(previousRun?.id || null, dispatchedAt);
+      await loadAll();
+      showToast(run.conclusion === 'success' ? 'Check complete' : `Check ${run.conclusion || run.status}`);
     } catch (e) {
       alert(e.message);
     }
