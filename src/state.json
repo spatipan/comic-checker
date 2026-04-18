@@ -46,5 +46,12 @@
       "referer": "https://manhuaus.com/",
       "next_chapter_hint": "present"
     }
+  },
+  "Reformation of the Deadbeat Noble": {
+    "last_chapter": 135,
+    "strategy": {
+      "method": "status_code",
+      "use_cffi": false
+    }
   }
 }
