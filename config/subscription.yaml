@@ -8,3 +8,6 @@ subscription:
   - name: Star-Embracing Swordmaster
     url: https://manhuaus.com/manga/star-embracing-swordmaster/chapter-{chapter}/
     notify: true
+  - name: The Regressed Mercenary's Machinations
+    url: https://manhuaus.com/manga/the-regressed-mercenarys-machinations/chapter-{chapter}/
+    notify: true
