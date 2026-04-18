@@ -11,3 +11,6 @@ subscription:
   - name: The Regressed Mercenary's Machinations
     url: https://manhuaus.com/manga/the-regressed-mercenarys-machinations/chapter-{chapter}/
     notify: true
+  - name: Hand Jumper
+    url: https://comix.to/title/l96ee-hand-jumper/8921744-chapter-{chapter}
+    notify: true
