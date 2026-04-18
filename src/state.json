@@ -20,5 +20,14 @@
       "use_cffi": true,
       "referer": "https://manhuaus.com/"
     }
+  },
+  "The Regressed Mercenary's Machinations": {
+    "last_chapter": 84,
+    "strategy": {
+      "method": "title_match",
+      "use_cffi": true,
+      "referer": "https://manhuaus.com/",
+      "next_chapter_hint": "present"
+    }
   }
 }
