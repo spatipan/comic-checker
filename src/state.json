@@ -1,5 +1,24 @@
 {
-  "Eternally Regressing Knight": 105,
-  "Pick Me Up Infinite Gacha": 197,
-  "Star-Embracing Swordmaster": 116
+  "Eternally Regressing Knight": {
+    "last_chapter": 105,
+    "strategy": {
+      "method": "status_code",
+      "use_cffi": false
+    }
+  },
+  "Pick Me Up Infinite Gacha": {
+    "last_chapter": 197,
+    "strategy": {
+      "method": "status_code",
+      "use_cffi": false
+    }
+  },
+  "Star-Embracing Swordmaster": {
+    "last_chapter": 118,
+    "strategy": {
+      "method": "title_match",
+      "use_cffi": true,
+      "referer": "https://manhuaus.com/"
+    }
+  }
 }

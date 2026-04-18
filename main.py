@@ -4,7 +4,7 @@ from src.manga_checker import main as run_checker
 
 def main():
     configure_logging()
-    run_checker()
+    raise SystemExit(run_checker())
 
 
 if __name__ == "__main__":
