@@ -37,5 +37,14 @@
       "use_cffi": true,
       "referer": "https://comix.to/"
     }
+  },
+  "Swordmaster\u2019s Youngest Son": {
+    "last_chapter": 170,
+    "strategy": {
+      "method": "title_match",
+      "use_cffi": true,
+      "referer": "https://manhuaus.com/",
+      "next_chapter_hint": "present"
+    }
   }
 }
