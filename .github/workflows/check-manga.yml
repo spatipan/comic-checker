@@ -1,5 +1,5 @@
 name: check-manga
-run-name: ${{ github.event.inputs.mode == 'probe' && format('probe: {0}', github.event.inputs.name) || 'check' }}
+run-name: "${{ github.event.inputs.mode == 'probe' && format('probe: {0}', github.event.inputs.name) || 'check' }}"
 
 on:
   # 08:00 / 14:00 / 20:00 Bangkok (ICT, UTC+7) = 01:00 / 07:00 / 13:00 UTC
