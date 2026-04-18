@@ -31,7 +31,7 @@
     }
   },
   "Hand Jumper": {
-    "last_chapter": 110,
+    "last_chapter": 120,
     "strategy": {
       "method": "redirect_latest",
       "use_cffi": true,
