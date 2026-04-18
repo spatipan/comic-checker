@@ -29,5 +29,13 @@
       "referer": "https://manhuaus.com/",
       "next_chapter_hint": "present"
     }
+  },
+  "Hand Jumper": {
+    "last_chapter": 110,
+    "strategy": {
+      "method": "redirect_latest",
+      "use_cffi": true,
+      "referer": "https://comix.to/"
+    }
   }
 }
