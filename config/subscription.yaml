@@ -14,3 +14,6 @@ subscription:
   - name: Hand Jumper
     url: https://comix.to/title/l96ee-hand-jumper/8921744-chapter-{chapter}
     notify: true
+  - name: Reformation of the Deadbeat Noble
+    url: https://asurascans.com/comics/reformation-of-the-deadbeat-noble-5abb513e/chapter/{chapter}
+    notify: true
