@@ -16,4 +16,4 @@ subscription:
     notify: true
   - name: Reformation of the Deadbeat Noble
     url: https://asurascans.com/comics/reformation-of-the-deadbeat-noble-5abb513e/chapter/{chapter}
-    notify: true
+    notify: false
