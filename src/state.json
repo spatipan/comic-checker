@@ -48,7 +48,7 @@
     }
   },
   "Reformation of the Deadbeat Noble": {
-    "last_chapter": 135,
+    "last_chapter": 138,
     "strategy": {
       "method": "status_code",
       "use_cffi": false
