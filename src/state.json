@@ -1,6 +1,6 @@
 {
   "Eternally Regressing Knight": {
-    "last_chapter": 105,
+    "last_chapter": 106,
     "strategy": {
       "method": "status_code",
       "use_cffi": false
@@ -14,7 +14,7 @@
     }
   },
   "Star-Embracing Swordmaster": {
-    "last_chapter": 118,
+    "last_chapter": 119,
     "strategy": {
       "method": "title_match",
       "use_cffi": true,
