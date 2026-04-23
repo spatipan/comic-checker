@@ -22,7 +22,7 @@
     }
   },
   "The Regressed Mercenary's Machinations": {
-    "last_chapter": 85,
+    "last_chapter": 86,
     "strategy": {
       "method": "title_match",
       "use_cffi": true,
