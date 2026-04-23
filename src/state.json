@@ -7,7 +7,7 @@
     }
   },
   "Pick Me Up Infinite Gacha": {
-    "last_chapter": 197,
+    "last_chapter": 198,
     "strategy": {
       "method": "status_code",
       "use_cffi": false
