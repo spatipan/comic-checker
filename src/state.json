@@ -1,6 +1,6 @@
 {
   "Eternally Regressing Knight": {
-    "last_chapter": 106,
+    "last_chapter": 107,
     "strategy": {
       "method": "status_code",
       "use_cffi": false
